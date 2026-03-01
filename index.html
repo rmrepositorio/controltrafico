@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Control Tráfico</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- jQuery y DataTables -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header">
+  <button id="toggleModo">Cambiar Modo Claro/Oscuro</button>
+  <button id="btnAtras">Atrás</button>
+  <button id="btnAdelante">Adelante</button>
+</div>
+
+<div class="controls">
+  <label>Fecha inicio: <input type="date" id="fechaInicio"></label>
+  <label>Fecha fin: <input type="date" id="fechaFin"></label>
+</div>
+
+<div class="kpi-container">
+  <div class="kpi">Total averías: <span id="totalAverias">0</span></div>
+  <div class="kpi">Promedio diario: <span id="promedioDiario">0</span></div>
+  <div class="kpi">Vehículo top: <span id="vehiculoTop">-</span></div>
+</div>
+
+<div class="charts">
+  <div class="chart-container"><canvas id="graficoFamilia"></canvas></div>
+  <div class="chart-container"><canvas id="graficoTurno"></canvas></div>
+  <div class="chart-container"><canvas id="graficoOrigen"></canvas></div>
+  <div class="chart-container"><canvas id="graficoFamiliaVeh"></canvas></div>
+  <div class="chart-container"><canvas id="graficoVHLO"></canvas></div>
+  <div class="chart-container" style="height:400px;"><canvas id="graficoEvolucion"></canvas></div>
+</div>
+
+<table id="tablaAverias" class="display" width="100%"></table>
+
+<script src="script.js"></script>
+</body>
+</html>
