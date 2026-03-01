@@ -4,20 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Control Tráfico</title>
-
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- DataTables (sin SearchPanes para evitar errores) -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<!-- ColReorder extension -->
 <link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css">
 <script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
-
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -44,42 +36,72 @@
 </div>
 
 <div class="charts">
+
   <div class="chart-cell">
-    <div class="chart-panel">
-      <div class="panel-title">Familia Avería</div>
+    <div class="chart-panel" id="panel-familia">
+      <div class="panel-header">
+        <span class="panel-title">Familia Avería</span>
+        <button class="btn-filtro-panel" data-campo="FAMILIA AVERIA" title="Filtrar valores">⊟</button>
+      </div>
       <canvas id="graficoFamilia"></canvas>
+      <div class="resize-handle" data-panel="panel-familia"></div>
     </div>
   </div>
+
   <div class="chart-cell">
-    <div class="chart-panel">
-      <div class="panel-title">Turno</div>
+    <div class="chart-panel" id="panel-turno">
+      <div class="panel-header">
+        <span class="panel-title">Turno</span>
+        <button class="btn-filtro-panel" data-campo="TURNO" title="Filtrar valores">⊟</button>
+      </div>
       <canvas id="graficoTurno"></canvas>
+      <div class="resize-handle" data-panel="panel-turno"></div>
     </div>
   </div>
+
   <div class="chart-cell">
-    <div class="chart-panel">
-      <div class="panel-title">Origen Aviso</div>
+    <div class="chart-panel" id="panel-origen">
+      <div class="panel-header">
+        <span class="panel-title">Origen Aviso</span>
+        <button class="btn-filtro-panel" data-campo="ORIGEN AVISO" title="Filtrar valores">⊟</button>
+      </div>
       <canvas id="graficoOrigen"></canvas>
+      <div class="resize-handle" data-panel="panel-origen"></div>
     </div>
   </div>
+
   <div class="chart-cell">
-    <div class="chart-panel">
-      <div class="panel-title">Familia Vehículo</div>
+    <div class="chart-panel" id="panel-familiaVeh">
+      <div class="panel-header">
+        <span class="panel-title">Familia Vehículo</span>
+        <button class="btn-filtro-panel" data-campo="FAMILIA" title="Filtrar valores">⊟</button>
+      </div>
       <canvas id="graficoFamiliaVeh"></canvas>
+      <div class="resize-handle" data-panel="panel-familiaVeh"></div>
     </div>
   </div>
+
   <div class="chart-cell">
-    <div class="chart-panel">
-      <div class="panel-title">Vehículo (VHLO)</div>
+    <div class="chart-panel" id="panel-vhlo">
+      <div class="panel-header">
+        <span class="panel-title">Vehículo (VHLO)</span>
+        <button class="btn-filtro-panel" data-campo="VHLO" title="Filtrar valores">⊟</button>
+      </div>
       <canvas id="graficoVHLO"></canvas>
+      <div class="resize-handle" data-panel="panel-vhlo"></div>
     </div>
   </div>
+
   <div class="chart-cell wide">
-    <div class="chart-panel">
-      <div class="panel-title">Evolución mensual por familia</div>
+    <div class="chart-panel" id="panel-evolucion">
+      <div class="panel-header">
+        <span class="panel-title">Evolución mensual por familia</span>
+      </div>
       <canvas id="graficoEvolucion"></canvas>
+      <div class="resize-handle" data-panel="panel-evolucion"></div>
     </div>
   </div>
+
 </div>
 
 <table id="tablaAverias" class="display" width="100%"></table>
