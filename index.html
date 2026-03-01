@@ -8,19 +8,26 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- jQuery y DataTables -->
+<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables (sin SearchPanes para evitar errores) -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- ColReorder extension -->
+<link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css">
+<script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
 
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="header">
-  <button id="toggleModo">Cambiar Modo Claro/Oscuro</button>
-  <button id="btnAtras">Atrás</button>
-  <button id="btnAdelante">Adelante</button>
+  <h1>⚡ Control Tráfico</h1>
+  <button id="btnAtras" disabled>◀ Atrás</button>
+  <button id="btnAdelante" disabled>Adelante ▶</button>
+  <button id="btnLimpiar">✕ Limpiar filtros</button>
+  <button id="toggleModo">☀ Modo claro</button>
 </div>
 
 <div class="controls">
@@ -28,19 +35,39 @@
   <label>Fecha fin: <input type="date" id="fechaFin"></label>
 </div>
 
+<div class="filtros-activos" id="filtrosActivos"></div>
+
 <div class="kpi-container">
-  <div class="kpi">Total averías: <span id="totalAverias">0</span></div>
-  <div class="kpi">Promedio diario: <span id="promedioDiario">0</span></div>
-  <div class="kpi">Vehículo top: <span id="vehiculoTop">-</span></div>
+  <div class="kpi">Total averías<span id="totalAverias">0</span></div>
+  <div class="kpi">Promedio diario<span id="promedioDiario">0</span></div>
+  <div class="kpi">Vehículo top<span id="vehiculoTop">-</span></div>
 </div>
 
 <div class="charts">
-  <div class="chart-container"><canvas id="graficoFamilia"></canvas></div>
-  <div class="chart-container"><canvas id="graficoTurno"></canvas></div>
-  <div class="chart-container"><canvas id="graficoOrigen"></canvas></div>
-  <div class="chart-container"><canvas id="graficoFamiliaVeh"></canvas></div>
-  <div class="chart-container"><canvas id="graficoVHLO"></canvas></div>
-  <div class="chart-container" style="height:400px;"><canvas id="graficoEvolucion"></canvas></div>
+  <div class="chart-panel">
+    <div class="panel-title">Familia Avería</div>
+    <canvas id="graficoFamilia"></canvas>
+  </div>
+  <div class="chart-panel">
+    <div class="panel-title">Turno</div>
+    <canvas id="graficoTurno"></canvas>
+  </div>
+  <div class="chart-panel">
+    <div class="panel-title">Origen Aviso</div>
+    <canvas id="graficoOrigen"></canvas>
+  </div>
+  <div class="chart-panel">
+    <div class="panel-title">Familia Vehículo</div>
+    <canvas id="graficoFamiliaVeh"></canvas>
+  </div>
+  <div class="chart-panel">
+    <div class="panel-title">Vehículo (VHLO)</div>
+    <canvas id="graficoVHLO"></canvas>
+  </div>
+  <div class="chart-panel wide">
+    <div class="panel-title">Evolución mensual por familia</div>
+    <canvas id="graficoEvolucion"></canvas>
+  </div>
 </div>
 
 <table id="tablaAverias" class="display" width="100%"></table>
