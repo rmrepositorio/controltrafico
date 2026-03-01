@@ -85,6 +85,7 @@ input[type="date"]:focus{outline:none;border-color:var(--accent);}
   transition:border-color .2s;
 }
 .chart-cell.wide .chart-panel{height:330px;}
+#panel-turno { height: 320px; } /* más espacio para etiquetas del doughnut */
 .chart-panel:hover{border-color:var(--accent);}
 
 .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}

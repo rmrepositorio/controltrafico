@@ -246,7 +246,7 @@ function crearGraficos() {
     }
   });
 
-  // ── Turno (doughnut) ──
+  // ── Turno (doughnut con etiquetas en los sectores) ──
   const ctxTurno = document.getElementById("graficoTurno").getContext("2d");
   charts.turno = new Chart(ctxTurno, {
     type: 'doughnut',
@@ -254,11 +254,12 @@ function crearGraficos() {
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: legendaBase('right'),
+        legend: { display: false },  // ocultamos leyenda porque usamos etiquetas directas
         tooltip: { callbacks: { label: ctx => {
           const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
           return ` ${ctx.label}: ${ctx.parsed} (${((ctx.parsed/total)*100).toFixed(1)}%)`;
-        }}}
+        }}},
+        datalabels: false  // por si hubiera plugin externo
       },
       onClick: (evt, elems) => {
         if (!elems.length) return;
@@ -266,8 +267,56 @@ function crearGraficos() {
         if (filtrosActivos["TURNO"] === valor) delete filtrosActivos["TURNO"];
         else filtrosActivos["TURNO"] = valor;
         pushHistorial(); renderizarFiltrosTags(); actualizarGraficos();
+      },
+      // Plugin inline para dibujar etiquetas dentro/fuera de cada sector
+      animation: { onComplete: function() { dibujarEtiquetasTurno(this); } }
+    },
+    plugins: [{
+      id: 'turnoLabels',
+      afterDraw(chart) {
+        const ctx2 = chart.ctx;
+        const ds   = chart.data.datasets[0];
+        const meta = chart.getDatasetMeta(0);
+        const total = ds.data.reduce((a,b) => a+b, 0);
+        if (!total) return;
+
+        ctx2.save();
+        meta.data.forEach((arc, i) => {
+          const val   = ds.data[i];
+          const pct   = ((val / total) * 100).toFixed(1);
+          const label = chart.data.labels[i];
+          if (!label) return;
+
+          // Centro del arco
+          const angle    = (arc.startAngle + arc.endAngle) / 2;
+          const midR     = (arc.innerRadius + arc.outerRadius) / 2;
+          const cx       = arc.x + Math.cos(angle) * midR;
+          const cy       = arc.y + Math.sin(angle) * midR;
+
+          // Punto en el borde exterior para la línea
+          const outerR   = arc.outerRadius + 12;
+          const lx       = arc.x + Math.cos(angle) * outerR;
+          const ly       = arc.y + Math.sin(angle) * outerR;
+
+          // Línea desde centro del arco al exterior
+          ctx2.beginPath();
+          ctx2.moveTo(cx, cy);
+          ctx2.lineTo(lx, ly);
+          ctx2.strokeStyle = 'rgba(255,255,255,0.4)';
+          ctx2.lineWidth = 1;
+          ctx2.stroke();
+
+          // Texto
+          const txtX = lx + (Math.cos(angle) >= 0 ? 6 : -6);
+          const txtY = ly + 4;
+          ctx2.font = 'bold 11px Inter, sans-serif';
+          ctx2.fillStyle = getLegendColor();
+          ctx2.textAlign = Math.cos(angle) >= 0 ? 'left' : 'right';
+          ctx2.fillText(`${label} (${pct}%)`, txtX, txtY);
+        });
+        ctx2.restore();
       }
-    }
+    }]
   });
 
   // ── Origen Aviso (barras) ──
@@ -559,12 +608,17 @@ function compareSoloFecha(a, b) {
   return new Date(a.getFullYear(),a.getMonth(),a.getDate()) - new Date(b.getFullYear(),b.getMonth(),b.getDate());
 }
 
-// ─── Drag & Drop reubicación de paneles ───
+// ─── Drag & Drop reubicación de paneles (solo desde drag-handle) ───
 function iniciarDragPaneles() {
   let dragSrc = null;
 
   document.querySelectorAll('.chart-cell').forEach(cell => {
-    cell.setAttribute('draggable', 'true');
+    // draggable se activa solo desde el drag-handle, no desde todo el panel
+    const handle = cell.querySelector('.drag-handle');
+    if (handle) {
+      handle.addEventListener('mousedown', () => cell.setAttribute('draggable', 'true'));
+      handle.addEventListener('mouseup',   () => cell.setAttribute('draggable', 'false'));
+    }
 
     cell.addEventListener('dragstart', e => {
       dragSrc = cell;
@@ -573,6 +627,7 @@ function iniciarDragPaneles() {
     });
     cell.addEventListener('dragend', () => {
       cell.classList.remove('dragging');
+      cell.setAttribute('draggable', 'false');
       document.querySelectorAll('.chart-cell').forEach(c => c.classList.remove('drag-over'));
     });
     cell.addEventListener('dragover', e => {
@@ -591,49 +646,48 @@ function iniciarDragPaneles() {
         const tgtIdx = cells.indexOf(cell);
         if (srcIdx < tgtIdx) grid.insertBefore(dragSrc, cell.nextSibling);
         else                  grid.insertBefore(dragSrc, cell);
-        // Redibujar charts después del reorder
         setTimeout(() => Object.values(charts).forEach(c => c.resize()), 50);
       }
     });
   });
 }
 
-// ─── Resize bidireccional (ancho + alto) con handles ───
+// ─── Resize bidireccional — gestor global único ───
 function iniciarResizePaneles() {
+  let activePanel = null, dir = '', startX = 0, startY = 0, startW = 0, startH = 0;
+
   document.querySelectorAll('.chart-panel').forEach(panel => {
-    // Handle sur (altura)
-    const hS = panel.querySelector('.resize-s');
-    // Handle este (anchura)
-    const hE = panel.querySelector('.resize-e');
-    // Handle esquina SE (ambos)
-    const hSE = panel.querySelector('.resize-se');
-
-    let dragging = false, dir = '', startX = 0, startY = 0, startW = 0, startH = 0;
-
     function onDown(e, direction) {
-      e.preventDefault(); e.stopPropagation();
-      dragging = true; dir = direction;
+      e.preventDefault();
+      e.stopPropagation();
+      // Desactivar draggable mientras hacemos resize
+      panel.closest('.chart-cell').setAttribute('draggable', 'false');
+      activePanel = panel;
+      dir = direction;
       startX = e.clientX; startY = e.clientY;
       startW = panel.offsetWidth; startH = panel.offsetHeight;
       document.body.style.userSelect = 'none';
       document.body.style.cursor = direction === 's' ? 'ns-resize' : direction === 'e' ? 'ew-resize' : 'nwse-resize';
     }
-
+    const hS  = panel.querySelector('.resize-s');
+    const hE  = panel.querySelector('.resize-e');
+    const hSE = panel.querySelector('.resize-se');
     if (hS)  hS.addEventListener('mousedown',  e => onDown(e, 's'));
     if (hE)  hE.addEventListener('mousedown',  e => onDown(e, 'e'));
     if (hSE) hSE.addEventListener('mousedown', e => onDown(e, 'se'));
+  });
 
-    document.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      if (dir === 's' || dir === 'se') panel.style.height = Math.max(150, startH + (e.clientY - startY)) + 'px';
-      if (dir === 'e' || dir === 'se') panel.style.width  = Math.max(200, startW + (e.clientX - startX)) + 'px';
-      Object.values(charts).forEach(c => c.resize());
-    });
-    document.addEventListener('mouseup', () => {
-      if (!dragging) return;
-      dragging = false;
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-    });
+  document.addEventListener('mousemove', e => {
+    if (!activePanel) return;
+    if (dir === 's' || dir === 'se') activePanel.style.height = Math.max(150, startH + (e.clientY - startY)) + 'px';
+    if (dir === 'e' || dir === 'se') activePanel.style.width  = Math.max(200, startW + (e.clientX - startX)) + 'px';
+    Object.values(charts).forEach(c => c.resize());
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!activePanel) return;
+    activePanel = null;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
   });
 }
