@@ -330,3 +330,9 @@ function compareSoloFecha(a, b) {
   return new Date(a.getFullYear(), a.getMonth(), a.getDate()) -
          new Date(b.getFullYear(), b.getMonth(), b.getDate());
 }
+
+// Redibuja charts al redimensionar paneles
+const ro = new ResizeObserver(() => {
+  Object.values(charts).forEach(c => c.resize());
+});
+document.querySelectorAll('.chart-panel').forEach(p => ro.observe(p));
